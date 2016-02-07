@@ -2,6 +2,7 @@
 #define SYSTEM_DEFD
 
 #include<cstdio>
+#include<cstdlib>
 
 class NODE{
   int id;
@@ -37,6 +38,52 @@ public:
   int retendnode(){return endnode;}
 
   void LPrint(FILE*);
+};
+
+struct COND{
+  int index;
+  double Val;
+};
+
+class BOUNDARYCONDS{
+  int F,D;  /* No. of BCs in Force & Displ */
+  COND *FF,*DD;
+
+public:
+  BOUNDARYCONDS(){F=0;D=0;
+    FF = (COND*)malloc(sizeof(COND));
+    DD = (COND*)malloc(sizeof(COND));}
+
+  int retD(){return D;}
+  int retF(){return F;}
+  void PrintFF(FILE* fid,int i){
+    if(i<F) fprintf(fid,"BC %d: %d\t%lf\n",i,FF[i].index,FF[i].Val);
+    else fprintf(fid,"ERROR - BC.F NOT FOUND");}
+  void PrintDD(FILE* fid,int i){
+    if(i<D) fprintf(fid,"BC %d: %d\t%lf\n",i,DD[i].index,DD[i].Val);
+    else fprintf(fid,"ERROR - BC.D NOT FOUND");}
+
+  void PushForce(int i,double v){F++;
+    FF = (COND*)realloc(FF,F*sizeof(COND));
+    FF[F-1].index = i;  FF[F-1].Val = v;}
+  void PushDisp(int i,double v){D++;
+    DD = (COND*)realloc(DD,D*sizeof(COND));
+    DD[D-1].index = i;  DD[D-1].Val = v;}
+};
+
+class SYSTEM{
+  int id;
+  double Length;    /* Total Length of bar */
+  int ELNUM,NDNUM;  /* No. of Elements & Nodes */
+  ELEMENT *L;
+  int *NPE;         /* No. of nodes in each element */
+  NODE *N;
+  BOUNDARYCONDS BC;
+
+public:
+  SYSTEM(int,int,double);
+
+  void SETBC(char,double,double);
 };
 
 #endif

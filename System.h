@@ -35,7 +35,8 @@ public:
   ELEMENT(){O = 0;  NL = (NODE**)malloc(sizeof(NODE*));}
   void setid(int i){id=i;}
   void PushNode(NODE*);
-  void setSENodeIDs(int);
+  void setstartnode(int);
+  void setendnode(int);
 
   void SetupK();
 
@@ -43,6 +44,7 @@ public:
   int retO(){return O;}
   int retstartnode(){return startnode;}
   int retendnode(){return endnode;}
+  double retKLij(int i,int j){return gsl_matrix_get(KL,i,j);}
 
   void LPrint(FILE*);
 };
@@ -90,11 +92,12 @@ class SYSTEM{
   gsl_matrix *K;     /* Stitched System Stiffness matrix */
 
 public:
-  SYSTEM(int,int,double);
+  SYSTEM(int,int,double); /* id,nodes,length */
 
   void SETBC(char,double,double); /* Function to take BCs */
 
   void InitELs(int); /* Initialize Elements */
+  void StitchK();
 };
 
 void MatrixPrint(FILE*,gsl_matrix*);

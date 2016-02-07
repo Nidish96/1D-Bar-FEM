@@ -75,6 +75,8 @@ public:
   int retF(){return F;}
   int retDid(int i){return DD[i].index;}
   int retFid(int i){return FF[i].index;}
+  double retDval(int i){return DD[i].Val;}
+  double retFval(int i){return FF[i].Val;}
   void PrintFF(FILE* fid,int i){
     if(i<F) fprintf(fid,"BC %d: %d\t%lf\n",i,FF[i].index,FF[i].Val);
     else fprintf(fid,"ERROR - BC.F NOT FOUND");}
@@ -112,7 +114,7 @@ public:
   void InitELs(int,double (*forcing)(double)); /* Initialize Elements */
   void StitchK_BF();
   void Solve();
-  void SOLNPRINT(FILE*);
+  void SYSPRINT(FILE*);
 
   ~SYSTEM(){gsl_matrix_free(K);
             gsl_vector_free(BODYFORCE);

@@ -11,12 +11,12 @@
 /* SYSTEM FUNCTIONS */
 double _A_(double x)
 {
-  return 1;
+  return 1.0;
 }
 
 double _E_(double x)
 {
-  return 1;
+  return 1.0;
 }
 
 void MatrixPrint(FILE* fid,gsl_matrix *M)
@@ -163,11 +163,11 @@ void ELEMENT::SetupK_BF(double (*forcing)(double))
       gsl_vector_set(BForce,i,gsl_vector_get(BForce,i) -
         (gsl_vector_get(NN,i)*forcing(x)+gsl_vector_get(NNP,i)*forcing(xp))*h/2.0*xd);
   }
-  printf("ELEMENT %d STIFFNESS MATRIX\n",id);
-  MatrixPrint(stdout,KL);
-
-  printf("ELEMENT %d BODYFORCE\n",id);
-  gsl_vector_fprintf(stdout,BForce,"%lf");
+  // printf("ELEMENT %d STIFFNESS MATRIX\n",id);
+  // MatrixPrint(stdout,KL);
+  //
+  // printf("ELEMENT %d BODYFORCE\n",id);
+  // gsl_vector_fprintf(stdout,BForce,"%lf");
 
   gsl_vector_free(BMMX);
   gsl_vector_free(BMX);
@@ -302,11 +302,11 @@ void SYSTEM::StitchK_BF()
           L[l].retKLij(i-ls,j-ls));
     }
   }
-  printf("STITCHED MATRIX\n");
-  MatrixPrint(stdout,K);
-
-  printf("STITCHED BODY FORCE VECTOR\n");
-  gsl_vector_fprintf(stdout,BODYFORCE,"%lf");
+  // printf("STITCHED MATRIX\n");
+  // MatrixPrint(stdout,K);
+  //
+  // printf("STITCHED BODY FORCE VECTOR\n");
+  // gsl_vector_fprintf(stdout,BODYFORCE,"%lf");
 }
 
 void SYSTEM::Solve()
@@ -382,16 +382,32 @@ void SYSTEM::Solve()
   gsl_vector_free(XMX);
 }
 
-void SYSTEM::SOLNPRINT(FILE* fid)
+void SYSTEM::SYSPRINT(FILE* fid)
 {
-  int i;
-  fprintf(fid,"ELEMENTS\n");
+  int i,dnum=BC.retD(),fnum=BC.retF();
+  fprintf(fid,"1D AXIAL ELEMENT FINITE ELEMENT MODELLING\n\n");
+  fprintf(fid,"SYSTEM SPECIFICATIONS\nLength : %lf\nNodes : %d\tElements : %d\n\n",Length,NDNUM,ELNUM);
+  fprintf(fid,"BOUNDARY CONDITIONS\n");
+  fprintf(fid,"DISPLACEMENT BCs : %d\n",dnum);
+  for( i=0;i<dnum;i++ )
+    fprintf(fid,"\tDISP_BC %d : %lf @ %d\n",i,BC.retDval(i),BC.retDid(i));
+  fprintf(fid,"\nFORCE BCs : %d\n",fnum);
+  for( i=0;i<fnum;i++ )
+    fprintf(fid,"\tFORCE_BC %d : %lf @ %d\n",i,BC.retFval(i),BC.retFid(i));
+  fprintf(fid,"\n");
+
+  fprintf(fid,"SOLUTION\n");
+  fprintf(fid,"BY ELEMENT\n");
   for( i=0;i<ELNUM;i++ )
     L[i].LPrint(fid);
 
-  fprintf(fid,"NODAL VALUES\nid\tX\t\tF\t\tU\n");
+  fprintf(fid,"\nBY NODE\n\tid\tX\t\tF\t\tU\n");
   for( i=0;i<NDNUM;i++ )
-    fprintf(fid,"%d\t%lf\t%lf\t%lf\n",N[i].retid(),N[i].retX(),
+    fprintf(fid,"\t%d\t%lf\t%lf\t%lf\n",N[i].retid(),N[i].retX(),
                                       N[i].retF(),N[i].retU());
 
+  printf("\nid\tX\tF\tU\n");
+  for( i=0;i<NDNUM;i++ )
+    printf("%d\t%lf\t%lf\t%lf\n",N[i].retid(),N[i].retX(),
+                                  N[i].retF(),N[i].retU());
 }

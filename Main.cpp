@@ -4,18 +4,23 @@
 
 double bodyforce(double x)
 {
-  return 1;
+  return x;
 }
 
 int main(int args,char* argc[])
 {
-  SYSTEM SYS(1,2,1);
-  SYS.SETBC('d',0.0,0);
+  double P = 1.0;
+  double L = 1.0;
+
+  SYSTEM SYS(1,20,L);
+
+  SYS.SETBC('d',0.0,0.0);
+  SYS.SETBC('f',1.0,P);
 
   SYS.InitELs(-1,bodyforce);
   SYS.StitchK_BF();
   SYS.Solve();
-  SYS.SOLNPRINT(stdout);
+  SYS.SYSPRINT(fopen("SYSTEM.FEM","w+"));
 
   return 0;
 }

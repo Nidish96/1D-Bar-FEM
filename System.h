@@ -3,6 +3,8 @@
 
 #include<cstdio>
 #include<cstdlib>
+#include<gsl/gsl_vector.h>
+#include<gsl/gsl_matrix.h>
 
 class NODE{
   int id;
@@ -27,10 +29,13 @@ class ELEMENT{
   int O;  /* No. of Nodes in this element */
   int startnode,endnode;  /* id of start and end nodes */
   NODE **NL;  /* Pointers to Nodes in the element */
+  gsl_matrix *KL; /* Element Stiffness Matrix */
 
 public:
+  ELEMENT(){O = 0;  NL = (NODE**)malloc(sizeof(NODE*));}
   void setid(int i){id=i;}
-  void setNodes(int,NODE[]);
+  void PushNode(NODE*);
+  void setSENodeIDs(int);
 
   int retid(){return id;}
   int retO(){return O;}
@@ -80,11 +85,14 @@ class SYSTEM{
   int *NPE;         /* No. of nodes in each element */
   NODE *N;
   BOUNDARYCONDS BC;
+  gsl_matrix *K;     /* Stitched System Stiffness matrix */
 
 public:
   SYSTEM(int,int,double);
 
-  void SETBC(char,double,double);
+  void SETBC(char,double,double); /* Function to take BCs */
+
+  void InitELs(int); /* Initialize Elements */
 };
 
 #endif

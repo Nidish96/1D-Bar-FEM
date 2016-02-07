@@ -1,6 +1,11 @@
 #include"System.h"
 #include<cstdio>
 #include<cstdlib>
+#include<gsl/gsl_vector.h>
+#include<gsl/gsl_matrix.h>
+#include<gsl/gsl_linalg.h>
+#include<gsl/gsl_permutation.h>
+#include<gsl/gsl_blas.h>
 
 /* CLASS BOUNDARYCONDS */
 void BOUNDARYCONDS::ChCondIndex(int old_id,int new_id)
@@ -21,14 +26,17 @@ void BOUNDARYCONDS::ChCondIndex(int old_id,int new_id)
 }
 
 /* CLASS ELEMENT */
-void ELEMENT::setNodes(int o,NODE N[])
+void ELEMENT::PushNode(NODE *N)
 {
-  O=o;
-  NL = (NODE**)malloc(O*sizeof(NODE*));
-  for( int i=0;i<O;i++ )
-    NL[i] = &N[i];
-  startnode = NL[0]->retid();
-  endnode = NL[O-1]->retid();
+  O++;
+  NL = (NODE**)realloc(NL,O*sizeof(NODE*));
+  NL[O-1] = N;
+}
+
+void ELEMENT::setSENodeIDs(int i)
+{
+  startnode = i;
+  endnode = startnode + (O-1);
 }
 
 void ELEMENT::LPrint(FILE* fid)
@@ -104,5 +112,36 @@ void SYSTEM::SETBC(char a,double xbc,double vbc)
       default:  printf("INVALID BC CHAR CODE\nQUITTING\n");
                 exit(1);
     }
+  }
+}
+
+void SYSTEM::InitELs(int ER)
+{
+  int i,j,k,nsperel;
+  ELNUM = (ER!=-1)?ER:NDNUM-1;
+  if( ELNUM>=NDNUM )
+  {
+    printf("INVALID ELEMENT NUMBER\nQUITTING\n");
+    exit(1);
+  }
+
+  L = (ELEMENT*)malloc(ELNUM*sizeof(ELEMENT));
+  NPE = (int*)malloc(ELNUM*sizeof(int));
+
+  nsperel = (NDNUM+(ELNUM-1))/ELNUM;
+
+  k = 0;
+  for( i=0;i<ELNUM-1;i++ )
+    NPE[i] = nsperel;
+  NPE[ELNUM-1] = (NDNUM-k);
+  for( i=0;i<ELNUM;i++ )
+  {
+    L[i].setid(i);
+    L[i].setSENodeIDs(k);
+    for(j=0;j<NPE[i];j++)
+      L[i].PushNode(&N[k++]);
+    k--;
+
+    /* SET UP ELEMENT STIFFNESS MATRIX */
   }
 }

@@ -1,4 +1,3 @@
-Main.0
-Main.o
-System.o
+*.o
+massif.*
 Main

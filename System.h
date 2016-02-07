@@ -22,6 +22,8 @@ public:
   double retU(){return U;}
 
   void NPrint(FILE* fid){fprintf(fid,"NODE %d: %lf\t%lf\t%lf\n",id,X,F,U);}
+
+  ~NODE(){}
 };
 
 class ELEMENT{
@@ -30,6 +32,7 @@ class ELEMENT{
   int startnode,endnode;  /* id of start and end nodes */
   NODE **NL;  /* Pointers to Nodes in the element */
   gsl_matrix *KL; /* Element Stiffness Matrix */
+  gsl_vector *BForce;
 
 public:
   ELEMENT(){O = 0;  NL = (NODE**)malloc(sizeof(NODE*));}
@@ -38,15 +41,20 @@ public:
   void setstartnode(int);
   void setendnode(int);
 
-  void SetupK();
+  void SetupK_BF(double (*forcing)(double));
 
   int retid(){return id;}
   int retO(){return O;}
   int retstartnode(){return startnode;}
   int retendnode(){return endnode;}
   double retKLij(int i,int j){return gsl_matrix_get(KL,i,j);}
+  double retBFi(int i){return gsl_vector_get(BForce,i);}
 
   void LPrint(FILE*);
+
+  void freeall(){free(NL);  gsl_matrix_free(KL);  gsl_vector_free(BForce);}
+
+  ~ELEMENT(){}
 };
 
 struct COND{
@@ -65,6 +73,8 @@ public:
 
   int retD(){return D;}
   int retF(){return F;}
+  int retDid(int i){return DD[i].index;}
+  int retFid(int i){return FF[i].index;}
   void PrintFF(FILE* fid,int i){
     if(i<F) fprintf(fid,"BC %d: %d\t%lf\n",i,FF[i].index,FF[i].Val);
     else fprintf(fid,"ERROR - BC.F NOT FOUND");}
@@ -79,6 +89,8 @@ public:
     DD = (COND*)realloc(DD,D*sizeof(COND));
     DD[D-1].index = i;  DD[D-1].Val = v;}
   void ChCondIndex(int,int);
+
+  ~BOUNDARYCONDS(){free(FF); free(DD);}
 };
 
 class SYSTEM{
@@ -86,18 +98,28 @@ class SYSTEM{
   double Length;    /* Total Length of bar */
   int ELNUM,NDNUM;  /* No. of Elements & Nodes */
   ELEMENT *L;
-  int *NPE;         /* No. of nodes in each element */
   NODE *N;
+  int *NPE;         /* No. of nodes in each element */
   BOUNDARYCONDS BC;
   gsl_matrix *K;     /* Stitched System Stiffness matrix */
+  gsl_vector *BODYFORCE;
 
 public:
   SYSTEM(int,int,double); /* id,nodes,length */
 
   void SETBC(char,double,double); /* Function to take BCs */
 
-  void InitELs(int); /* Initialize Elements */
-  void StitchK();
+  void InitELs(int,double (*forcing)(double)); /* Initialize Elements */
+  void StitchK_BF();
+  void Solve();
+  void SOLNPRINT(FILE*);
+
+  ~SYSTEM(){gsl_matrix_free(K);
+            gsl_vector_free(BODYFORCE);
+            free(N);  free(NPE);
+            for( int i=0;i<ELNUM;i++ )
+              L[i].freeall();
+            free(L);}
 };
 
 void MatrixPrint(FILE*,gsl_matrix*);

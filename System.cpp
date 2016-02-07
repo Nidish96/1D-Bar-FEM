@@ -2,6 +2,24 @@
 #include<cstdio>
 #include<cstdlib>
 
+/* CLASS BOUNDARYCONDS */
+void BOUNDARYCONDS::ChCondIndex(int old_id,int new_id)
+{
+  int i;
+  for( i=0;i<F;i++ )
+    if( FF[i].index==old_id )
+    {
+      FF[i].index=new_id;
+      break;
+    }
+  for( i=0;i<D;i++ )
+    if( DD[i].index==old_id )
+    {
+      DD[i].index=new_id;
+      break;
+    }
+}
+
 /* CLASS ELEMENT */
 void ELEMENT::setNodes(int o,NODE N[])
 {
@@ -57,6 +75,34 @@ void SYSTEM::SETBC(char a,double xbc,double vbc)
   }
   else  /* NO NODE FOUND AT REQUIRED POINT */
   {
+    int setxid;
+    for( i=0;i<NDNUM-1;i++ )
+    {
+      if( N[i].retX()<xbc && N[i+1].retX()>xbc )
+      {
+        setxid = i+1; /* x must be set at a node with id i+1 */
+        break;
+      }
+    }
 
+    NDNUM++;
+    N = (NODE*)realloc(N,NDNUM*sizeof(NODE));
+    N[setxid].setid(setxid);
+    N[setxid].setX(xbc);
+    for(i=NDNUM-1;i>setxid;i--)
+    {
+      N[i] = N[i-1];
+      N[i].setid(i);
+      BC.ChCondIndex(i-1,i);
+    }
+
+    switch(a){
+      case 'f': N[setxid].setF(vbc);  BC.PushForce(setxid,vbc);
+                break;  /* Force BC */
+      case 'd': N[setxid].setU(vbc);  BC.PushDisp(setxid,vbc);
+                break;  /* Displacement BC */
+      default:  printf("INVALID BC CHAR CODE\nQUITTING\n");
+                exit(1);
+    }
   }
 }

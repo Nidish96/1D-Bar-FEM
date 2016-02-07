@@ -69,6 +69,7 @@ public:
   void PushDisp(int i,double v){D++;
     DD = (COND*)realloc(DD,D*sizeof(COND));
     DD[D-1].index = i;  DD[D-1].Val = v;}
+  void ChCondIndex(int,int);
 };
 
 class SYSTEM{

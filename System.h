@@ -37,6 +37,8 @@ public:
   void PushNode(NODE*);
   void setSENodeIDs(int);
 
+  void SetupK();
+
   int retid(){return id;}
   int retO(){return O;}
   int retstartnode(){return startnode;}
@@ -94,5 +96,9 @@ public:
 
   void InitELs(int); /* Initialize Elements */
 };
+
+void MatrixPrint(FILE*,gsl_matrix*);
+double _A_(double);
+double _E_(double);
 
 #endif

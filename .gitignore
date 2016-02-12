@@ -1,3 +1,4 @@
 *.o
 massif.*
 Main
+OUTPUT.dat

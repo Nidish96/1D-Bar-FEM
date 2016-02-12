@@ -10,4 +10,4 @@ L = 1.0;
 
 u(x) = ((P+L**2/2)*x-x**3/6)/(A(x)*E(x));
 
-plot '<./Main' u 2:4 w lp t 'FEM Solution',u(x) w l t 'Actual Solution'
+plot 'OUTPUT.dat' u 2:4 w lp t 'FEM Solution',u(x) w l t 'Actual Solution'

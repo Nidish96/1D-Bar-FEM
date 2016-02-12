@@ -41,7 +41,8 @@ public:
   void setstartnode(int);
   void setendnode(int);
 
-  void SetupK_BF(double (*forcing)(double));
+  void SetupK_BF(double (*forcing)(double));  /* With Isoparametric Mapping */
+  void SetupK_BF_n(double (*forcing)(double)); /* Without Isoparametric Mapping */
 
   int retid(){return id;}
   int retO(){return O;}

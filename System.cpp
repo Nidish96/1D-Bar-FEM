@@ -76,6 +76,50 @@ void ELEMENT::LPrint(FILE* fid)
   }
 }
 
+void ELEMENT::SetupK_BF_n(double (*forcing)(double))
+{
+  int i,j;
+  double x,h,xs,xf;
+  gsl_vector *NN = gsl_vector_alloc(O);
+  gsl_vector *NNP = gsl_vector_alloc(O);
+  gsl_vector *BB = gsl_vector_alloc(O);
+
+  KL = gsl_matrix_calloc(O,O);
+  BForce = gsl_vector_calloc(O);
+
+  xs = NL[0]->retX();
+  xf = NL[O-1]->retX();
+  h = (xf-xs)/10;
+
+  for( x=xs;x<=xf;x+=h )
+  {
+    for( i=0;i<O;i++ )
+    {
+      gsl_vector_set(NN,i,1.0);
+      gsl_vector_set(NNP,i,1.0);
+      for( j=0;j<O;j++ )
+      {
+        if( i!=j )
+        {
+          gsl_vector_set(NN,i,gsl_vector_get(NN,i)*(x-NL[j]->retX())/(NL[i]->retX()-NL[j]->retX()));
+          gsl_vector_set(NNP,i,gsl_vector_get(NNP,i)*(x+h-NL[j]->retX())/(NL[i]->retX()-NL[j]->retX()));
+        }
+      }
+      gsl_vector_set(BB,i,(gsl_vector_get(NNP,i)-gsl_vector_get(NN,i))/h);
+    }
+
+    for( i=0;i<O;i++ )
+    {
+      gsl_vector_set(BForce,i,gsl_vector_get(BForce,i)+gsl_vector_get(NN,i)*forcing(x)*h);
+      for( j=0;j<O;j++ )
+        gsl_matrix_set(KL,i,j,gsl_matrix_get(KL,i,j)+gsl_vector_get(BB,i)*gsl_vector_get(BB,j)*_A_(x)*_E_(x)*h);
+    }
+  }
+
+  gsl_vector_free(NN);
+  gsl_vector_free(NNP);
+  gsl_vector_free(BB);
+}
 void ELEMENT::SetupK_BF(double (*forcing)(double))
 {
   int i,j;
@@ -302,11 +346,11 @@ void SYSTEM::StitchK_BF()
           L[l].retKLij(i-ls,j-ls));
     }
   }
-  // printf("STITCHED MATRIX\n");
-  // MatrixPrint(stdout,K);
-  //
-  // printf("STITCHED BODY FORCE VECTOR\n");
-  // gsl_vector_fprintf(stdout,BODYFORCE,"%lf");
+  printf("STITCHED MATRIX\n");
+  MatrixPrint(stdout,K);
+
+  printf("STITCHED BODY FORCE VECTOR\n");
+  gsl_vector_fprintf(stdout,BODYFORCE,"%lf");
 }
 
 void SYSTEM::Solve()

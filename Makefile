@@ -7,6 +7,7 @@ DBG = -g
 Nodes = 20
 Elements = -1
 Interval = 500
+Intg = gl
 
 Main: $(DEPS)
 	$(CC) -o $@ $(OBJ) $(CFLAGS)
@@ -15,7 +16,7 @@ debug: $(DEPS)
 	$(CC) -o Main $(OBJ) $(CFLAGS) $(DBG)
 
 plot: Plot.gp
-	./Main $(Nodes) $(Elements) $(Interval)>OUTPUT.dat && gnuplot5 Plot.gp -p
+	./Main $(Nodes) $(Elements) $(Interval) $(Intg)>OUTPUT.dat && gnuplot5 Plot.gp -p
 
 clean:
 	rm *.o Main

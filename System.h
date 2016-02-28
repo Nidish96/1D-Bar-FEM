@@ -6,6 +6,8 @@
 #include<gsl/gsl_vector.h>
 #include<gsl/gsl_matrix.h>
 
+enum Integration{ Trapezoidal,GaussLegendre };
+
 class NODE{
   int id;
   double X, F, U; /* Position, Force, Displacement */
@@ -41,8 +43,9 @@ public:
   void setstartnode(int);
   void setendnode(int);
 
-  void SetupK_BF(double (*forcing)(double));  /* With Isoparametric Mapping */
-  void SetupK_BF_n(double (*forcing)(double)); /* Without Isoparametric Mapping */
+  void SetupK_BF_gl(double (*forcing)(double));  /* Gauss-Legendre Without Isoparametric Mapping */
+  void SetupK_BF_gl_iso(double (*forcing)(double));  /* Gauss-Legendre With Isoparametric Mapping */
+  void SetupK_BF_tr(double (*forcing)(double)); /* Trapezoidal Without Isoparametric Mapping */
 
   int retid(){return id;}
   int retO(){return O;}

@@ -233,7 +233,7 @@ void ELEMENT::SetupK_BF_gl(double (*forcing)(double))
   gsl_vector *Btmp = gsl_vector_alloc(O),*Ntmp = gsl_vector_alloc(O);
 
   int intg_i,i,j,n_GL;
-  n_GL = (O+1.0)/2.0;
+  n_GL = O;//+1.0)/2.0;
   gsl_integration_glfixed_table *Tab = gsl_integration_glfixed_table_alloc(n_GL);
   double xi,wi;
 

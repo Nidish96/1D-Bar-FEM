@@ -6,7 +6,7 @@
 #include<gsl/gsl_vector.h>
 #include<gsl/gsl_matrix.h>
 
-enum Integration{ Trapezoidal,GaussLegendre };
+enum Integration{ Trapezoidal,GaussLegendre,GaussLegendreIso };
 
 class NODE{
   int id;

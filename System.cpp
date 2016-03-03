@@ -11,16 +11,26 @@
 
 extern int interval;
 extern Integration Type;
+extern double *af;
+extern int afn;
+extern double *ef;
+extern int efn;
 
 /* SYSTEM FUNCTIONS */
 double _A_(double x)
 {
-  return 1.0;
+  double ret=0;
+  for( int i=0;i<afn;i++ )
+    ret += af[i]*pow(x,i);
+  return ret;
 }
 
 double _E_(double x)
 {
-  return 1.0;
+  double ret=0;
+  for( int i=0;i<efn;i++ )
+    ret += ef[i]*pow(x,i);
+  return ret;
 }
 
 void MatrixPrint(FILE* fid,gsl_matrix *M)
@@ -517,8 +527,8 @@ void SYSTEM::SYSPRINT(FILE* fid)
     fprintf(fid,"\t%d\t%lf\t%lf\t%lf\n",N[i].retid(),N[i].retX(),
                                       N[i].retF(),N[i].retU());
 
-  printf("\nid\tX\tF\tU\n");
+  fprintf(stdout,"\nid\tX\tF\tU\n");
   for( i=0;i<NDNUM;i++ )
-    printf("%d\t%lf\t%lf\t%lf\n",N[i].retid(),N[i].retX(),
+    fprintf(stdout,"%d\t%lf\t%lf\t%lf\n",N[i].retid(),N[i].retX(),
                                   N[i].retF(),N[i].retU());
 }

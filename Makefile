@@ -15,7 +15,7 @@ Main: $(DEPS)
 debug: $(DEPS)
 	$(CC) -o Main $(OBJ) $(CFLAGS) $(DBG)
 
-plot: Plot.gp
+plot: Plot.gp Main
 	./Main -n$(Nodes) -e$(Elements) -v$(Interval) -i$(Intg)>OUTPUT.dat && gnuplot5 Plot.gp -p
 
 clean:

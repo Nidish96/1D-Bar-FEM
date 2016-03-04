@@ -34,6 +34,7 @@ int main(int args,char* argc[])
   int No_Elements = -1;
   interval = 100;
   int intgn = 1;
+  Type = GaussLegendreIso;
 
   /* Body Force Polynomial Coefficients */
   cfn = 2;
@@ -111,9 +112,6 @@ int main(int args,char* argc[])
                   case 'd': bdn++;  bd = (double**)realloc(bd,bdn*sizeof(double*));
                                     bd[bdn-1] = (double*)malloc(2*sizeof(double));
                             sscanf(argc[i],"-bd%lf,%lf",&bd[bdn-1][0],&bd[bdn-1][1]); break;
-                  case 'i': printf("\n\tInteractive Boundary Condition Setup \n");
-
-                  break;
                 }
       case 'r': break;
       case 'h': i=100;  break;
@@ -146,6 +144,12 @@ int main(int args,char* argc[])
     exit(0);
   }
 
+  if( No_Elements>=No_Nodes )
+  {
+    fprintf(stderr,"\n\tNumber of Elements can't be greater than number of nodes - Quitting\n");
+    exit(1);
+  }
+
   /* System Initialization */
   SYSTEM SYS(1,No_Nodes,L);
 
@@ -160,10 +164,10 @@ int main(int args,char* argc[])
   }
   for( i=0;i<bfn;i++ )
     for( j=0;j<bdn;j++ )
-      if( bf[i][0]==bd[j][0] )
+      if( bf[i][0]==bd[j][0] ||bf[i][0]>L||bd[j][0]>L )
       {
-        fprintf(stderr,"\n\tBOUNDARY DATA ERROR  - Force & Displacement BCs Set at one Position\n");
-        exit(1);
+        fprintf(stderr,"\n\tBOUNDARY DATA ERROR  - Force & Displacement BCs Set at one Position - Quitting\n");
+        exit(2);
       }
   for( i=0;i<bdn;i++ )
   {
@@ -180,6 +184,7 @@ int main(int args,char* argc[])
   SYS.StitchK_BF();
   SYS.Solve();
   SYS.SYSPRINT(fopen("SYSTEM.FEM","w+"));
+  SYS.ConditionNumber();
 
   free(af);
   free(cf);

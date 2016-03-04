@@ -90,6 +90,7 @@ void ELEMENT::LPrint(FILE* fid)
   }
 }
 
+/* Set up element stiffness matrix using Trapezoidal integration */
 void ELEMENT::SetupK_BF_tr(double (*forcing)(double))
 {
   int i,j;
@@ -207,6 +208,9 @@ void ELEMENT::SetupK_BF_gl_iso(double (*forcing)(double))
   double si,wi;
   double x,jac;
 
+  FILE* FID = fopen("ISO.dat","w+");
+  fprintf(FID,"Element %d\n",id);
+
   for( i=0;i<O;i++ )
     gsl_vector_set(XX,i,NL[i]->retX());
 
@@ -230,6 +234,13 @@ void ELEMENT::SetupK_BF_gl_iso(double (*forcing)(double))
     gsl_vector_free(Btmp);
     gsl_vector_free(Ntmp);
   }
+  for( si=-1;si<=1;si+=0.01 )
+  {
+    x = Map_X(XX,si,O);
+    jac = Map_Jac(XX,si,O);
+    fprintf(FID,"%lf\t%lf\t%lf\n",si,x,jac);
+  }
+  fclose(FID);
 
   gsl_integration_glfixed_table_free(Tab);
   gsl_vector_free(XX);
@@ -368,13 +379,20 @@ void SYSTEM::InitELs(int ER,double (*forcing)(double))
   L = (ELEMENT*)malloc(ELNUM*sizeof(ELEMENT));
   NPE = (int*)malloc(ELNUM*sizeof(int));
 
-  double tmp = (double)(NDNUM+(ELNUM-1))/ELNUM+0.5;
-  nsperel = (int)tmp;
+  // double tmp = floor((double)(NDNUM+(ELNUM-1))/ELNUM);
+  // nsperel = (int)tmp;
+
+  nsperel = floor((double)(NDNUM+(ELNUM-1))/ELNUM);
 
   k = 0;
   for( i=0;i<ELNUM-1;i++ )
     NPE[i] = nsperel;
   NPE[ELNUM-1] = (NDNUM-(nsperel*(ELNUM-1)-(ELNUM-1)));
+  // fprintf(stderr,"npe\t");
+  // for( i=0;i<ELNUM;i++ )
+  //   fprintf(stderr,"%d,",NPE[i]);
+  // fprintf(stderr,"\n");
+  // exit(2);
   for( i=0;i<ELNUM;i++ )
   {
     L[i].setid(i);
@@ -386,20 +404,11 @@ void SYSTEM::InitELs(int ER,double (*forcing)(double))
 
     /* SET UP ELEMENT STIFFNESS MATRIX */
     if( Type==Trapezoidal )
-    {
       L[i].SetupK_BF_tr(forcing);
-      // fprintf(stderr,"\nTRAPEZOIDAL\n");
-    }
     else if( Type==GaussLegendre )
-    {
       L[i].SetupK_BF_gl(forcing);
-      // fprintf(stderr,"\nGauss-Legendre\n");
-    }
     else if( Type==GaussLegendreIso )
-    {
       L[i].SetupK_BF_gl_iso(forcing);
-      // fprintf(stderr,"\nGauss-Legendre\n");
-    }
   }
 }
 
@@ -501,6 +510,22 @@ void SYSTEM::Solve()
   }
 
   gsl_vector_free(XMX);
+}
+
+void SYSTEM::ConditionNumber()
+{
+  gsl_matrix *V = gsl_matrix_alloc(NDNUM,NDNUM);
+  gsl_vector *S = gsl_vector_alloc(NDNUM);
+  gsl_vector *WS = gsl_vector_alloc(NDNUM);
+
+  gsl_linalg_SV_decomp(K,V,S,WS);
+
+  fprintf(stderr,"\n\tCONDITION NUMBER OF STITCHED STIFFNESS MATRIX\n");
+  fprintf(stderr,"\tCondition Number = %e\n",gsl_vector_max(S)/gsl_vector_min(S));
+
+  gsl_matrix_free(V);
+  gsl_vector_free(S);
+  gsl_vector_free(WS);
 }
 
 void SYSTEM::SYSPRINT(FILE* fid)

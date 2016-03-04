@@ -120,6 +120,8 @@ public:
   void Solve();
   void SYSPRINT(FILE*);
 
+  void ConditionNumber();
+
   ~SYSTEM(){gsl_matrix_free(K);
             gsl_vector_free(BODYFORCE);
             free(N);  free(NPE);

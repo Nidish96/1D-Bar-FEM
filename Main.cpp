@@ -64,7 +64,7 @@ int main(int args,char* argc[])
   for( i=0;i<bfn;i++ )
     bd[i] = (double*)malloc(2*sizeof(double));  /* first column - position;
                                                    second column - disp */
-  bd[0][0] = 0;  bd[0][1] = 0;
+  bd[0][0] = 0;  bd[0][1] = 1;
 
   for( i=1;i<args;i++ )
   {

@@ -448,6 +448,19 @@ void SYSTEM::Solve()
   gsl_vector *XMX = gsl_vector_alloc(NDNUM);
   gsl_permutation *PP = gsl_permutation_calloc(NDNUM);
 
+  fprintf(stderr,"Disp BCs\n");
+  for( i=0;i<dnum;i++ )
+  {
+    fprintf(stderr,"%d\t%lf\n",BC.retDid(i),BC.retDval(i));
+  }
+  fprintf(stderr,"Force BCs\n");
+  for( i=0;i<fnum;i++ )
+  {
+    fprintf(stderr,"%d\t%lf\n",BC.retFid(i),BC.retFval(i));
+  }
+
+  // exit(1);
+
   for( i=0;i<NDNUM;i++ )
     for( j=0;j<NDNUM;j++ )
     {
@@ -477,12 +490,19 @@ void SYSTEM::Solve()
         }
       if( flag==1 )
         gsl_vector_set(BMX,i,N[i].retF());
+      else
+        gsl_vector_set(BMX,i,0.0);
     }
 
   for( k=0;k<dnum;k++ )
     for( i=0;i<NDNUM;i++ )
-      gsl_vector_set(BMX,i,gsl_vector_get(BMX,i)-gsl_matrix_get(K,i,BC.retDid(k))*N[i].retU()
-                      +gsl_vector_get(BODYFORCE,i));
+      // gsl_vector_set(BMX,i,gsl_vector_get(BMX,i)-gsl_matrix_get(K,i,BC.retDid(k))*N[i].retU()
+      //                 +gsl_vector_get(BODYFORCE,i));
+      gsl_vector_set(BMX,i,gsl_vector_get(BMX,i)-gsl_matrix_get(K,i,BC.retDid(k))*
+          N[BC.retDid(k)].retU());
+  for( i=0;i<NDNUM;i++ )
+    gsl_vector_set(BMX,i,gsl_vector_get(BMX,i)+gsl_vector_get(BODYFORCE,i));
+
 
   i = 1;
   gsl_linalg_LU_decomp(AMX,PP,&i);

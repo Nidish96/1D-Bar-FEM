@@ -19,4 +19,4 @@ plot: Plot.gp Main
 	./Main -n$(Nodes) -e$(Elements) -v$(Interval)>OUTPUT.dat && gnuplot5 Plot.gp -p
 
 clean:
-	rm *.o Main
+	rm *.o Main *.dat
